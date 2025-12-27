@@ -20,7 +20,16 @@ def main():
 def get_user_expense():
     print("Getting user expense.")
     expense_name = input("Enter expense name: ")
-    expense_amount = float(input("Enter expense amount: "))
+    while True:
+        try:
+            expense_amount = float(input("Enter expense amount: "))
+            if expense_amount <= 0:
+                print("Amount must be positive.")
+                continue
+            break
+        except ValueError:
+            print("Please enter a valid number.")
+    
     expense_categories = [
         "Food",
         "Home",
@@ -34,17 +43,14 @@ def get_user_expense():
         for i, category_name in enumerate(expense_categories):
             print(f" {i + 1}. {category_name}")
 
-        value_range = f"[1 - {len(expense_categories)}]"
-        selected_index = int(input(f"Enter a category number {value_range}: ")) - 1
-
-        if selected_index in range(len(expense_categories)):
+        try:
+            selected_index = int(input("Enter a category number: ")) - 1
             selected_category = expense_categories[selected_index]
-            new_expense = Expense(
-                name=expense_name, category=selected_category, amount=expense_amount
-            )
-            return new_expense
-        else:
+            break
+        except (ValueError, IndexError):
             print("Invalid category. Please try again.")
+        
+    return Expense(expense_name, selected_category, expense_amount)
 
 def save_user_expense_to_file(expense, expense_file_path):
     print(f"Saving user expense: {expense} to {expense_file_path}")
@@ -58,11 +64,12 @@ def summarize_expenses(expense_file_path, budget):
     with open(expense_file_path, "r") as f:
         lines = f.readlines()
         for line in lines:
-            expense_name, expense_amount, expense_category = line.strip().split(",")
-            line_expense = Expense(
-                name=expense_name, amount=float(expense_amount), category=expense_category
-            )
-            expenses.append(line_expense)
+            parts = line.strip().split(",")
+
+            if len(parts) != 3:
+                continue
+
+            expense_name, expense_amount, expense_category = parts
 
     amount_by_category = {}
     for expense in expenses:
