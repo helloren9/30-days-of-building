@@ -6,15 +6,25 @@ import calendar
 def main():
     print("Running Expense Tracker.")
     expense_file_path = "expenses.csv"
-    budget = 2000
+    
+    while True:
+        try:
+            budget = float(input("Enter your starting monthly budget: "))
+            if budget <= 0:
+                print("Budget must be greater than 0.")
+                continue
+            break
+        except ValueError:
+            print("Please enter a valid number.")
 
-    # Get user input for expense.
-    expense = get_user_expense()
+    while True:
+        expense = get_user_expense()
+        save_user_expense_to_file(expense, expense_file_path)
 
-    # Write the expense to file.
-    save_user_expense_to_file(expense, expense_file_path)
+        more = input("Add another expense? (y/n): ").lower()
+        if more != "y":
+            break
 
-    # Read file and summarize expense.
     summarize_expenses(expense_file_path, budget)
 
 def get_user_expense():
@@ -61,6 +71,7 @@ def save_user_expense_to_file(expense, expense_file_path):
 def summarize_expenses(expense_file_path, budget):
     print("Summarize user expense.")
     expenses = []
+
     with open(expense_file_path, "r") as f:
         lines = f.readlines()
         for line in lines:
@@ -70,6 +81,14 @@ def summarize_expenses(expense_file_path, budget):
                 continue
 
             expense_name, expense_amount, expense_category = parts
+
+            line_expense = Expense(
+                name=expense_name,
+                amount=float(expense_amount),
+                category=expense_category
+            )
+
+            expenses.append(line_expense)
 
     amount_by_category = {}
     for expense in expenses:
